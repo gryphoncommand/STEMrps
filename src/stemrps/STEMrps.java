@@ -85,12 +85,18 @@ public class STEMrps {
             playGame();
         }
         Status match = GameLogic.beats(player, computer);
-        if (match == Status.W) {
-            System.out.println("You won!");
-        } else if (match == Status.T) {
-            System.out.println("You tied");
-        } else if (match == Status.L) {
-            System.out.println("You lost :(");
+        if (null != match) switch (match) {
+            case W:
+                System.out.println("You won!");
+                break;
+            case T:
+                System.out.println("You tied");
+                break;
+            case L:
+                System.out.println("You lost :(");
+                break;
+            default:
+                break;
         }
         playGame();
         System.out.println("~");
