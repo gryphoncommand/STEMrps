@@ -95,7 +95,7 @@ public class GameLogic {
         Status playerS_l = null;
         RPS player_l = null;
         RPS comp_l = null;
-        int max = Math.min(lines, 50);
+        int max = Math.min(lines, 18);
         for (int i = 0; i < max; ++i) { //Last 30 games
             RPS player;
             RPS comp;
