@@ -21,22 +21,22 @@ public class STEMrps {
 
     //our directory we store everything in
     public static String dir = "C:/STEMrps/";
-    
+
     //Our char for pressing keys down
     static String rock = "r";
     static String paper = "p";
     static String scissors = "s";
-    
+
     //Help text
-    static String helpText = 
-            "Enter 'play' to play the game!";
+    static String helpText
+            = "Enter 'play' to play the game!";
 
     //We log games in here
     public static PrintWriter logger;
-    
+
     //How we read input
     public static Scanner reader = new Scanner(System.in);
-    
+
     /**
      * @param args $directory
      */
@@ -61,13 +61,13 @@ public class STEMrps {
         playGame();
         shutdown();
     }
-    
+
     //recursively take user input
-    public static void playGame() {
+    public static void playGame() throws IOException {
         System.out.println("~");
         System.out.println("input: ");
         String input = getInput();
-        RPS computer = RPS.ROCK; //Needs actual logic
+        RPS computer = GameLogic.rand(); //Needs actual logic
         RPS player = RPS.ROCK; //Will terminate if user doesnt enter  correct vals
         if (input.equalsIgnoreCase("exit")) {
             System.exit(0);
@@ -85,23 +85,28 @@ public class STEMrps {
             playGame();
         }
         Status match = GameLogic.beats(player, computer);
-        if (null != match) switch (match) {
-            case W:
-                System.out.println("You won!");
-                break;
-            case T:
-                System.out.println("You tied");
-                break;
-            case L:
-                System.out.println("You lost :(");
-                break;
-            default:
-                break;
+        if (null != match) {
+            switch (match) {
+                case W:
+                    System.out.println("You won!");
+                    writeToLogger("You (" + player.name() + ") won against computer (" + computer.name() + ")");
+                    break;
+                case T:
+                    System.out.println("You tied");
+                    writeToLogger("You (" + player.name() + ") tied against computer (" + computer.name() + ")");
+                    break;
+                case L:
+                    System.out.println("You lost :(");
+                    writeToLogger("You (" + player.name() + ") lost against computer (" + computer.name() + ")");
+                    break;
+                default:
+                    break;
+            }
         }
         playGame();
         System.out.println("~");
     }
-    
+
     //get user input
     public static String getInput() {
         return reader.nextLine();
