@@ -21,6 +21,7 @@ import twitter4j.StallWarning;
 import twitter4j.Status;
 import twitter4j.StatusDeletionNotice;
 import twitter4j.StatusListener;
+import twitter4j.StatusUpdate;
 import twitter4j.TwitterException;
 
 /**
@@ -33,17 +34,35 @@ public class MentionListener implements StatusListener {
     @Override
     public void onStatus(Status status) {
         System.out.println(status.getUser().getScreenName() + ": " + status.getText());
-        /*try {
-            if (!STEMrps.isUsrSetup(status.getUser().getId())) {
-                
-            } else {
-                
+        try {
+            STEMrps.makeSureUsrSetup(status.getUser().getId());
+            String[] inp = status.getText().split(" ");
+            String player = "";
+            for (String s : inp) {
+                if (STEMrps.getFromString(s) != null) {
+                    player = s;
+                    break;
+                }
             }
+            stemrps.Status match = STEMrps.playGame(status.getUser().getId(), player);
+            RPS player_rps = STEMrps.getFromString(player);
+            String tweet = "@" + status.getUser().getScreenName() + " ";
+            if (player_rps == null) {
+                tweet += "Something went wrong! pls use r, p, or s to play!";
+            } else if (match == stemrps.Status.W) {
+                tweet += "You (" + player_rps.name() + ") won!";
+            } else if (match == stemrps.Status.T) {
+                tweet += "You (" + player_rps.name() + ") tied";
+            } else if (match == stemrps.Status.L) {
+                tweet += "You (" + player_rps.name() + ") lost :(";
+            }
+            StatusUpdate rt = new StatusUpdate(tweet);
+            STEMrps.t.updateStatus(rt);
         } catch (IOException ex) {
             Logger.getLogger(MentionListener.class.getName()).log(Level.SEVERE, null, ex);
         } catch (TwitterException ex) {
             Logger.getLogger(MentionListener.class.getName()).log(Level.SEVERE, null, ex);
-        }*/
+        }
     }
 
     @Override
@@ -70,5 +89,5 @@ public class MentionListener implements StatusListener {
     public void onException(Exception excptn) {
         System.out.println(Arrays.toString(excptn.getStackTrace()));
     }
-    
+
 }

@@ -1,6 +1,7 @@
 package stemrps;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -11,6 +12,12 @@ import java.nio.file.Paths;
 import java.sql.Time;
 import java.time.Instant;
 import java.util.Scanner;
+import twitter4j.FilterQuery;
+import twitter4j.Twitter;
+import twitter4j.TwitterFactory;
+import twitter4j.TwitterStream;
+import twitter4j.TwitterStreamFactory;
+import twitter4j.conf.ConfigurationBuilder;
 
 /**
  * Rock paper scissors!
@@ -18,6 +25,9 @@ import java.util.Scanner;
  * @author director
  */
 public class STEMrps {
+
+    //Our twitter acc
+    public static Twitter t;
 
     //our directory we store everything in
     public static String dir = "C:/STEMrps/";
@@ -34,22 +44,20 @@ public class STEMrps {
     static String helpText
             = "Enter 'play' to play the game!";
 
-    //We log games in here
-    public static PrintWriter logger;
-    public static PrintWriter playerLogger;
-
     //How we read input
     public static Scanner reader = new Scanner(System.in);
 
     /**
-     * @param args $directory
+     * @param args $directory $isTwitter $oath
      */
     public static void main(String[] args) throws IOException {
+        String path = "";
         if (args.length >= 1) {
             dir = args[0];
         }
         if (args.length >= 2) {
             isTwitter = Boolean.parseBoolean(args[1]);
+            path = args[2];
         }
         if (!isTwitter) {
             if (!isSetup()) {
@@ -60,8 +68,6 @@ public class STEMrps {
                     System.exit(-1);
                 }
             }
-            logger = new PrintWriter(new FileWriter(dir + "games.txt", true));
-            playerLogger = new PrintWriter(new FileWriter(dir + "player.txt", true));
             writeToLogger("~");
             writeToLogger("Starting new session at " + Time.from(Instant.now()).toString());
             writeToLogger("");
@@ -70,9 +76,31 @@ public class STEMrps {
             System.out.println("For scissors: " + scissors);
             playGames();
         } else {
-
+            initTwitter(path);
         }
-        shutdown();
+    }
+
+    //init twitter
+    public static void initTwitter(String file) throws FileNotFoundException {
+        Scanner s = new Scanner(new File(file));
+        String[] f = new String[4];
+        for (int i = 0; i < 4; i++) {
+            f[i] = s.nextLine();
+        }
+        ConfigurationBuilder cb = new ConfigurationBuilder();
+        cb.setDebugEnabled(true)
+                .setOAuthConsumerKey(f[0])
+                .setOAuthConsumerSecret(f[1])
+                .setOAuthAccessToken(f[2])
+                .setOAuthAccessTokenSecret(f[3]);
+        TwitterFactory tf = new TwitterFactory(cb.build());
+        t = tf.getInstance();
+        TwitterStreamFactory twitterStreamFactory = new TwitterStreamFactory(t.getConfiguration());
+        TwitterStream twitterStream = twitterStreamFactory.getInstance();
+        FilterQuery filterQuery = new FilterQuery();
+        filterQuery.follow(new long[]{4741197613L});
+        twitterStream.addListener(new MentionListener());
+        twitterStream.filter(filterQuery);
     }
 
     //Loop for games
@@ -132,11 +160,16 @@ public class STEMrps {
 
     //Log to player logger
     public static void formatGameToLogger(RPS player, Status s, RPS comp, long usr) throws IOException {
-        makeSureUsrSetup(usr);
+        PrintWriter logger = new PrintWriter(new FileWriter(dir + "games.txt", true));
         PrintWriter usrLogger = new PrintWriter(new FileWriter(dir + "usr/" + usr + ".txt", true));
-        usrLogger.print(player.name() + "," + s.name() + "," + comp.name());
-        usrLogger.println();
+
+        makeSureUsrSetup(usr);
+
+        usrLogger.println(player.name() + "," + s.name() + "," + comp.name());
+        logger.println(player.name() + "," + s.name() + "," + comp.name());
+
         usrLogger.close();
+        logger.close();
     }
 
     public static void makeSureUsrSetup(long usr) throws IOException {
@@ -158,14 +191,9 @@ public class STEMrps {
 
     //Prints a line to the log file
     public static void writeToLogger(String s) throws IOException {
+        PrintWriter logger = new PrintWriter(new FileWriter(dir + "games.txt", true));
         logger.print(s);
         logger.println();
         logger.flush();
-    }
-
-    //closes everything
-    public static void shutdown() throws IOException {
-        logger.close();
-        playerLogger.close();
     }
 }
