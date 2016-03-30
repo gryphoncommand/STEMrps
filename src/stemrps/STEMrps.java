@@ -33,6 +33,7 @@ public class STEMrps {
 
     //We log games in here
     public static PrintWriter logger;
+    public static PrintWriter playerLogger;
 
     //How we read input
     public static Scanner reader = new Scanner(System.in);
@@ -52,6 +53,7 @@ public class STEMrps {
             }
         }
         logger = new PrintWriter(new FileWriter(dir + "games.txt", true));
+        playerLogger = new PrintWriter(new FileWriter(dir + "player.txt", true));
         writeToLogger("~");
         writeToLogger("Starting new session at " + Time.from(Instant.now()).toString());
         writeToLogger("");
@@ -67,7 +69,7 @@ public class STEMrps {
         System.out.println("~");
         System.out.println("input: ");
         String input = getInput();
-        RPS computer = GameLogic.rand(); //Needs actual logic
+        RPS computer = GameLogic.getSmartStrat();
         RPS player = RPS.ROCK; //Will terminate if user doesnt enter  correct vals
         if (input.equalsIgnoreCase("exit")) {
             System.exit(0);
@@ -103,6 +105,7 @@ public class STEMrps {
                     break;
             }
         }
+        writeToPlayerLogger(player.name() + "," + match.name() + "," + computer.name());
         playGame();
         System.out.println("~");
     }
@@ -123,6 +126,13 @@ public class STEMrps {
         logger.print(s);
         logger.println();
         logger.flush();
+    }
+
+    //Prints to playerLogger
+    public static void writeToPlayerLogger(String s) throws IOException {
+        playerLogger.print(s);
+        playerLogger.println();
+        playerLogger.flush();
     }
 
     //closes everything
