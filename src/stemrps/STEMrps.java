@@ -22,6 +22,9 @@ public class STEMrps {
     //our directory we store everything in
     public static String dir = "C:/STEMrps/";
 
+    //Whether is a twitter server
+    public static boolean isTwitter = false;
+
     //Our char for pressing keys down
     static String rock = "r";
     static String paper = "p";
@@ -45,69 +48,81 @@ public class STEMrps {
         if (args.length >= 1) {
             dir = args[0];
         }
-        if (!isSetup()) {
-            boolean created = new File(dir).mkdir();
-            if (!created) {
-                System.out.println("Error creating storage file!");
-                System.exit(-1);
-            }
+        if (args.length >= 2) {
+            isTwitter = Boolean.parseBoolean(args[1]);
         }
-        logger = new PrintWriter(new FileWriter(dir + "games.txt", true));
-        playerLogger = new PrintWriter(new FileWriter(dir + "player.txt", true));
-        writeToLogger("~");
-        writeToLogger("Starting new session at " + Time.from(Instant.now()).toString());
-        writeToLogger("");
-        System.out.println("For rock: " + rock);
-        System.out.println("For paper: " + paper);
-        System.out.println("For scissors: " + scissors);
-        playGame();
+        if (!isTwitter) {
+            if (!isSetup()) {
+                boolean created = new File(dir).mkdir();
+                boolean createdUsr = new File(dir + "usr/").mkdir();
+                if (!created || !createdUsr) {
+                    System.out.println("Error creating storage file!");
+                    System.exit(-1);
+                }
+            }
+            logger = new PrintWriter(new FileWriter(dir + "games.txt", true));
+            playerLogger = new PrintWriter(new FileWriter(dir + "player.txt", true));
+            writeToLogger("~");
+            writeToLogger("Starting new session at " + Time.from(Instant.now()).toString());
+            writeToLogger("");
+            System.out.println("For rock: " + rock);
+            System.out.println("For paper: " + paper);
+            System.out.println("For scissors: " + scissors);
+            playGames();
+        } else {
+
+        }
         shutdown();
     }
 
-    //recursively take user input
-    public static void playGame() throws IOException {
-        System.out.println("~");
-        System.out.println("input: ");
-        String input = getInput();
-        RPS computer = GameLogic.getSmartStrat();
+    //Loop for games
+    public static void playGames() throws IOException {
+        Scanner inp = new Scanner(System.in);
+        for (int i = 0; i < 10000; ++i) { //max 10000 games
+            Status match = playGame(0, inp.nextLine());
+            if (match == Status.W) {
+                System.out.println("You won!");
+            }
+            if (match == Status.T) {
+                System.out.println("You tied");
+            }
+            if (match == Status.L) {
+                System.out.println("You lost :(");
+            }
+        }
+    }
+
+    //Plays one game
+    public static Status playGame(long usr, String input) throws IOException {
+        /*System.out.println("~");
+        System.out.println("input: ");*/
+        RPS computer = GameLogic.getSmartStrat(usr);
         RPS player = RPS.ROCK; //Will terminate if user doesnt enter  correct vals
         if (input.equalsIgnoreCase("exit")) {
             System.exit(0);
         } else if (input.equalsIgnoreCase("help")) {
             System.out.println(helpText);
-            playGame();
-        } else if (input.equalsIgnoreCase(rock)) {
-            player = RPS.ROCK;
-        } else if (input.equalsIgnoreCase(paper)) {
-            player = RPS.PAPER;
-        } else if (input.equalsIgnoreCase(scissors)) {
-            player = RPS.SCISSORS;
+            return null;
         } else {
-            System.out.println("Something went wrong, please try again.");
-            playGame();
+            player = getFromString(input);
         }
         Status match = GameLogic.beats(player, computer);
-        if (null != match) {
-            switch (match) {
-                case W:
-                    System.out.println("You won!");
-                    writeToLogger("You (" + player.name() + ") won against computer (" + computer.name() + ")");
-                    break;
-                case T:
-                    System.out.println("You tied");
-                    writeToLogger("You (" + player.name() + ") tied against computer (" + computer.name() + ")");
-                    break;
-                case L:
-                    System.out.println("You lost :(");
-                    writeToLogger("You (" + player.name() + ") lost against computer (" + computer.name() + ")");
-                    break;
-                default:
-                    break;
-            }
+        formatGameToLogger(player, match, computer, usr);
+        return match;
+    }
+
+    //Get what they chose
+    public static RPS getFromString(String s) {
+        if (s.equalsIgnoreCase(rock)) {
+            return RPS.ROCK;
+        } else if (s.equalsIgnoreCase(paper)) {
+            return RPS.PAPER;
+        } else if (s.equalsIgnoreCase(scissors)) {
+            return RPS.SCISSORS;
+        } else {
+            System.out.println("Something went wrong, please try again.");
+            return null;
         }
-        writeToPlayerLogger(player.name() + "," + match.name() + "," + computer.name());
-        playGame();
-        System.out.println("~");
     }
 
     //get user input
@@ -115,9 +130,29 @@ public class STEMrps {
         return reader.nextLine();
     }
 
+    //Log to player logger
+    public static void formatGameToLogger(RPS player, Status s, RPS comp, long usr) throws IOException {
+        makeSureUsrSetup(usr);
+        PrintWriter usrLogger = new PrintWriter(new FileWriter(dir + "usr/" + usr + ".txt", true));
+        usrLogger.print(player.name() + "," + s.name() + "," + comp.name());
+        usrLogger.println();
+        usrLogger.close();
+    }
+
+    public static void makeSureUsrSetup(long usr) throws IOException {
+        File f = new File(dir + "usr/" + usr + ".txt");
+        f.createNewFile();
+    }
+
     //See if we are setup
     private static boolean isSetup() {
         Path dirPath = Paths.get(dir);
+        return Files.exists(dirPath, LinkOption.NOFOLLOW_LINKS);
+    }
+
+    //See if we are setup
+    public static boolean isUsrSetup(long usr) {
+        Path dirPath = Paths.get(dir + "usr/" + usr + ".txt");
         return Files.exists(dirPath, LinkOption.NOFOLLOW_LINKS);
     }
 
@@ -128,16 +163,9 @@ public class STEMrps {
         logger.flush();
     }
 
-    //Prints to playerLogger
-    public static void writeToPlayerLogger(String s) throws IOException {
-        playerLogger.print(s);
-        playerLogger.println();
-        playerLogger.flush();
-    }
-
     //closes everything
     public static void shutdown() throws IOException {
         logger.close();
+        playerLogger.close();
     }
-
 }

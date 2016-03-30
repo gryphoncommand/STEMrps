@@ -2,6 +2,7 @@ package stemrps;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.Time;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -46,12 +47,14 @@ public class GameLogic {
             } else if (b == RPS.SCISSORS) {
                 return RPS.ROCK;
             }
-        } else if (b == RPS.ROCK) {
-            return RPS.PAPER;
-        } else if (b == RPS.PAPER) {
-            return RPS.ROCK;
+        } else if (a == RPS.SCISSORS) {
+            if (b == RPS.ROCK) {
+                return RPS.PAPER;
+            } else if (b == RPS.PAPER) {
+                return RPS.ROCK;
+            }
         }
-        return RPS.PAPER; //If they chose the same
+        return rand(); //If they chose the same
     }
 
     //Returns random one
@@ -71,7 +74,7 @@ public class GameLogic {
     }
 
     //Gets the most likely winning strategy
-    public static RPS getSmartStrat() throws FileNotFoundException {
+    public static RPS getSmartStrat(long usr) throws FileNotFoundException, IOException {
         RPS suggestedChoice = RPS.ROCK;
         double likelyToChange_loss = 0;
         double likelyToChange_win = 0;
@@ -79,7 +82,9 @@ public class GameLogic {
         int wins = 0;
         int ties = 0;
         int losses = 0;
-        Scanner s = new Scanner(new File(STEMrps.dir + "player.txt"));
+        String file = STEMrps.dir + "/usr/" + usr + ".txt";
+        STEMrps.makeSureUsrSetup(usr);
+        Scanner s = new Scanner(new File(file));
         List<String> line = new ArrayList<>();
         int lines = 0;
         while (s.hasNextLine()) {
@@ -90,11 +95,12 @@ public class GameLogic {
         Status playerS_l = null;
         RPS player_l = null;
         RPS comp_l = null;
-        for (int i = 0; i < Math.min(line.size(), 30); ++i) { //Last 30 games
+        int max = Math.min(lines, 50);
+        for (int i = 0; i < max; ++i) { //Last 30 games
             RPS player;
             RPS comp;
             Status playerS;
-            String match = line.get(i);
+            String match = line.get(lines - max + i);
             String[] arr = match.split(",");
             player = RPS.valueOf(arr[0]);
             comp = RPS.valueOf(arr[2]);
