@@ -90,7 +90,7 @@ public class GameLogic {
         Status playerS_l = null;
         RPS player_l = null;
         RPS comp_l = null;
-        for (int i = 0; i < line.size(); ++i) {
+        for (int i = 0; i < Math.min(line.size(), 30); ++i) { //Last 30 games
             RPS player;
             RPS comp;
             Status playerS;
