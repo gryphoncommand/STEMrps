@@ -23,6 +23,7 @@ import twitter4j.StatusDeletionNotice;
 import twitter4j.StatusListener;
 import twitter4j.StatusUpdate;
 import twitter4j.TwitterException;
+import twitter4j.User;
 
 /**
  *
@@ -34,34 +35,55 @@ public class MentionListener implements StatusListener {
     @Override
     public void onStatus(Status status) {
         System.out.println(status.getUser().getScreenName() + ": " + status.getText());
-        try {
-            STEMrps.makeSureUsrSetup(status.getUser().getId());
-            String[] inp = status.getText().split(" ");
-            String player = "";
-            for (String s : inp) {
-                if (STEMrps.getFromString(s) != null) {
-                    player = s;
-                    break;
+        String[] inp = status.getText().split(" ");
+        String player = "";
+        if (inp[1].equalsIgnoreCase("stats")) {
+            try {
+                long user = status.getUser().getId();
+                String whoStats = "";
+                if (inp[2] != null && !inp[2].equalsIgnoreCase("me")) {
+                    User acc = STEMrps.t.showUser(inp[2]);
+                    user = acc.getId();
+                    whoStats = acc.getScreenName() + " ";
                 }
+                String tweet = "@" + status.getUser().getScreenName() + " " + whoStats + GameLogic.getStatsString(user);
+                STEMrps.t.updateStatus(tweet);
+
+            } catch (Exception ex) {
+                Logger.getLogger(MentionListener.class.getName()).log(Level.SEVERE, null, ex);
             }
-            stemrps.Status match = STEMrps.playGame(status.getUser().getId(), player);
-            RPS player_rps = STEMrps.getFromString(player);
-            String tweet = "@" + status.getUser().getScreenName() + " ";
-            if (player_rps == null) {
-                tweet += "Something went wrong! pls use r, p, or s to play!";
-            } else if (match == stemrps.Status.W) {
-                tweet += "You (" + player_rps.name() + ") won!";
-            } else if (match == stemrps.Status.T) {
-                tweet += "You (" + player_rps.name() + ") tied";
-            } else if (match == stemrps.Status.L) {
-                tweet += "You (" + player_rps.name() + ") lost :(";
+        } else {
+            try {
+                if (status.getUser().getId() == 4741197613L) { //If it is our's?
+                    return;
+                }
+                STEMrps.makeSureUsrSetup(status.getUser().getId());
+                for (String s : inp) {
+                    if (STEMrps.getFromString(s) != null) {
+                        player = s;
+                        break;
+                    }
+                }
+                stemrps.Status match = STEMrps.playGame(status.getUser().getId(), player);
+                RPS player_rps = STEMrps.getFromString(player);
+                String tweet = "@" + status.getUser().getScreenName() + " ";
+                if (player_rps == null) {
+                    tweet += "Something went wrong! pls use r, p, or s to play!";
+                } else if (match == stemrps.Status.W) {
+                    tweet += "You (" + player_rps.name() + ") won!";
+                } else if (match == stemrps.Status.T) {
+                    tweet += "You (" + player_rps.name() + ") tied";
+                } else if (match == stemrps.Status.L) {
+                    tweet += "You (" + player_rps.name() + ") lost :(";
+                }
+                tweet += " (#" + STEMrps.gamesPlayed() + ")";
+                StatusUpdate rt = new StatusUpdate(tweet);
+                STEMrps.t.updateStatus(rt);
+            } catch (IOException ex) {
+                Logger.getLogger(MentionListener.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (TwitterException ex) {
+                Logger.getLogger(MentionListener.class.getName()).log(Level.SEVERE, null, ex);
             }
-            StatusUpdate rt = new StatusUpdate(tweet);
-            STEMrps.t.updateStatus(rt);
-        } catch (IOException ex) {
-            Logger.getLogger(MentionListener.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (TwitterException ex) {
-            Logger.getLogger(MentionListener.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 

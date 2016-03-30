@@ -16,6 +16,17 @@ import java.util.Scanner;
  */
 public class GameLogic {
 
+    //Returns a good tweet for every stats
+    public static String getStatsString(long userId) throws FileNotFoundException {
+        String s = "win: %" + (int)getWinPercent(userId);
+        s += "  tie: %" + (int)getTiePercent(userId);
+        s += "  lose: %" + (int)getLossPercent(userId);
+        s += "  rock: %" + (int)getRockPercent(userId);
+        s += "  paper: %" + (int)getPaperPercent(userId);
+        s += "  scissors: %" + (int)getScissorsPercent(userId);
+        return s;
+    }
+
     //return if a beats b
     public static Status beats(RPS a, RPS b) {
         if (a == b) {
@@ -71,6 +82,102 @@ public class GameLogic {
             return RPS.SCISSORS;
         }
         return null;
+    }
+
+    //Returns win percentage
+    public static double getWinPercent(long userId) throws FileNotFoundException {
+        Scanner s = new Scanner(new File(STEMrps.dir + "usr/" + userId + ".txt"));
+        int wins = 0;
+        int lines = 0;
+        while (s.hasNextLine()) {
+            String curLine = s.nextLine();
+            String matchStatus = curLine.split(",")[1];
+            if (matchStatus.equalsIgnoreCase("w")) {
+                wins++;
+            }
+            ++lines;
+        }
+        return 100 * ((double) (wins)) / lines;
+    }
+
+    //Returns tie percentage
+    public static double getTiePercent(long userId) throws FileNotFoundException {
+        Scanner s = new Scanner(new File(STEMrps.dir + "usr/" + userId + ".txt"));
+        int wins = 0;
+        int lines = 0;
+        while (s.hasNextLine()) {
+            String curLine = s.nextLine();
+            String matchStatus = curLine.split(",")[1];
+            if (matchStatus.equalsIgnoreCase("t")) {
+                wins++;
+            }
+            ++lines;
+        }
+        return 100 * ((double) (wins)) / lines;
+    }
+
+    //Returns loss percentage
+    public static double getLossPercent(long userId) throws FileNotFoundException {
+        Scanner s = new Scanner(new File(STEMrps.dir + "usr/" + userId + ".txt"));
+        int wins = 0;
+        int lines = 0;
+        while (s.hasNextLine()) {
+            String curLine = s.nextLine();
+            String matchStatus = curLine.split(",")[1];
+            if (matchStatus.equalsIgnoreCase("l")) {
+                wins++;
+            }
+            ++lines;
+        }
+        return 100 * ((double) (wins)) / lines;
+    }
+
+    //Returns win percentage
+    public static double getRockPercent(long userId) throws FileNotFoundException {
+        Scanner s = new Scanner(new File(STEMrps.dir + "usr/" + userId + ".txt"));
+        int wins = 0;
+        int lines = 0;
+        while (s.hasNextLine()) {
+            String curLine = s.nextLine();
+            String matchStatus = curLine.split(",")[0];
+            if (matchStatus.equalsIgnoreCase("rock")) {
+                wins++;
+            }
+            ++lines;
+        }
+        return 100 * ((double) (wins)) / lines;
+    }
+
+    //Returns win percentage
+    public static double getPaperPercent(long userId) throws FileNotFoundException {
+        Scanner s = new Scanner(new File(STEMrps.dir + "usr/" + userId + ".txt"));
+        int wins = 0;
+        int lines = 0;
+        while (s.hasNextLine()) {
+            String curLine = s.nextLine();
+            String matchStatus = curLine.split(",")[0];
+            if (matchStatus.equalsIgnoreCase("paper")) {
+                wins++;
+            }
+            ++lines;
+        }
+        return 100 * ((double) (wins)) / lines;
+    }
+
+    //Returns win percentage
+    public static double getScissorsPercent(long userId) throws FileNotFoundException {
+        Scanner s = new Scanner(new File(STEMrps.dir + "usr/" + userId + ".txt"));
+        int wins = 0;
+        int lines = 0;
+        while (s.hasNextLine()) {
+            String curLine = s.nextLine();
+            String matchStatus = curLine.split(",")[0];
+            if (matchStatus.equalsIgnoreCase("scissors")) {
+                wins++;
+            }
+            ++lines;
+        }
+        return 100 * ((double) (wins)) / lines;
     }
 
     //Gets the most likely winning strategy

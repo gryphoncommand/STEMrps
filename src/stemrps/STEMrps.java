@@ -63,6 +63,11 @@ public class STEMrps {
             if (!isSetup()) {
                 boolean created = new File(dir).mkdir();
                 boolean createdUsr = new File(dir + "usr/").mkdir();
+                File numGames = new File(dir + "count.txt");
+                numGames.createNewFile();
+                PrintWriter numWrite0 = new PrintWriter(numGames);
+                numWrite0.println("0");
+                numWrite0.close();
                 if (!created || !createdUsr) {
                     System.out.println("Error creating storage file!");
                     System.exit(-1);
@@ -83,16 +88,12 @@ public class STEMrps {
     //init twitter
     public static void initTwitter(String file) throws FileNotFoundException {
         Scanner s = new Scanner(new File(file));
-        String[] f = new String[4];
-        for (int i = 0; i < 4; i++) {
-            f[i] = s.nextLine();
-        }
         ConfigurationBuilder cb = new ConfigurationBuilder();
         cb.setDebugEnabled(true)
-                .setOAuthConsumerKey(f[0])
-                .setOAuthConsumerSecret(f[1])
-                .setOAuthAccessToken(f[2])
-                .setOAuthAccessTokenSecret(f[3]);
+                .setOAuthConsumerKey(s.nextLine())
+                .setOAuthConsumerSecret(s.nextLine())
+                .setOAuthAccessToken(s.nextLine())
+                .setOAuthAccessTokenSecret(s.nextLine());
         TwitterFactory tf = new TwitterFactory(cb.build());
         t = tf.getInstance();
         TwitterStreamFactory twitterStreamFactory = new TwitterStreamFactory(t.getConfiguration());
@@ -152,24 +153,37 @@ public class STEMrps {
             return null;
         }
     }
+    
+    //Gets number of games played
+    public static long gamesPlayed() throws FileNotFoundException {
+        Scanner file = new Scanner(new File(dir + "count.txt"));
+        return Long.parseLong(file.nextLine());
+    }
 
     //get user input
     public static String getInput() {
         return reader.nextLine();
     }
 
-    //Log to player logger
-    public static void formatGameToLogger(RPS player, Status s, RPS comp, long usr) throws IOException {
+    //Log to player logger returns games played
+    public static long formatGameToLogger(RPS player, Status s, RPS comp, long usr) throws IOException {
         PrintWriter logger = new PrintWriter(new FileWriter(dir + "games.txt", true));
         PrintWriter usrLogger = new PrintWriter(new FileWriter(dir + "usr/" + usr + ".txt", true));
+        Scanner countFile = new Scanner(new File(dir + "count.txt"));
+        long games = Long.parseLong(countFile.nextLine());
+        games++;
+        PrintWriter countLogger = new PrintWriter(new FileWriter(dir + "count.txt"));
 
         makeSureUsrSetup(usr);
 
         usrLogger.println(player.name() + "," + s.name() + "," + comp.name());
         logger.println(player.name() + "," + s.name() + "," + comp.name());
+        countLogger.println(games);
 
         usrLogger.close();
         logger.close();
+        countLogger.close();
+        return games;
     }
 
     public static void makeSureUsrSetup(long usr) throws IOException {
