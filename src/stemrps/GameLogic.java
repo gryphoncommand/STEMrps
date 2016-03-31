@@ -18,12 +18,18 @@ public class GameLogic {
 
     //Returns a good tweet for every stats
     public static String getStatsString(long userId) throws FileNotFoundException {
-        String s = "win: %" + (int)getWinPercent(userId);
-        s += "  tie: %" + (int)getTiePercent(userId);
-        s += "  lose: %" + (int)getLossPercent(userId);
-        s += "  rock: %" + (int)getRockPercent(userId);
-        s += "  paper: %" + (int)getPaperPercent(userId);
-        s += "  scissors: %" + (int)getScissorsPercent(userId);
+        String s = "";
+
+        try {
+            s += "win: %" + (int) getWinPercent(userId);
+            s += "  tie: %" + (int) getTiePercent(userId);
+            s += "  lose: %" + (int) getLossPercent(userId);
+            s += "  rock: %" + (int) getRockPercent(userId);
+            s += "  paper: %" + (int) getPaperPercent(userId);
+            s += "  scissors: %" + (int) getScissorsPercent(userId);
+        } catch (Exception e) {
+            s = "Oops! Didn't catch that. Tweet us using 'stats <userTag>'";
+        }
         return s;
     }
 

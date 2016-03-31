@@ -41,16 +41,19 @@ public class MentionListener implements StatusListener {
             try {
                 long user = status.getUser().getId();
                 String whoStats = "";
-                if (inp[2] != null && !inp[2].equalsIgnoreCase("me")) {
-                    User acc = STEMrps.t.showUser(inp[2]);
-                    user = acc.getId();
-                    whoStats = acc.getScreenName() + " ";
+                if (inp.length >= 3) {
+                    if (inp[2] != null && !inp[2].equalsIgnoreCase("me")) {
+                        User acc = STEMrps.t.showUser(inp[2]);
+                        user = acc.getId();
+                        whoStats = acc.getScreenName() + " ";
+                    }
                 }
                 String tweet = "@" + status.getUser().getScreenName() + " " + whoStats + GameLogic.getStatsString(user);
                 STEMrps.t.updateStatus(tweet);
 
             } catch (Exception ex) {
                 Logger.getLogger(MentionListener.class.getName()).log(Level.SEVERE, null, ex);
+                return;
             }
         } else {
             try {
@@ -79,10 +82,15 @@ public class MentionListener implements StatusListener {
                 tweet += " (#" + STEMrps.gamesPlayed() + ")";
                 StatusUpdate rt = new StatusUpdate(tweet);
                 STEMrps.t.updateStatus(rt);
-            } catch (IOException ex) {
+            } catch (Exception ex) {
                 Logger.getLogger(MentionListener.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (TwitterException ex) {
-                Logger.getLogger(MentionListener.class.getName()).log(Level.SEVERE, null, ex);
+                String tweet = "@" + status.getUser().getScreenName() + " Oops, did't catch that.";
+                StatusUpdate rt = new StatusUpdate(tweet);
+                try {
+                    STEMrps.t.updateStatus(rt);
+                } catch (TwitterException ex1) {
+                    Logger.getLogger(MentionListener.class.getName()).log(Level.SEVERE, null, ex1);
+                }
             }
         }
     }
