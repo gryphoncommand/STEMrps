@@ -67,19 +67,19 @@ public class MentionListener implements StatusListener {
                         break;
                     }
                 }
-                stemrps.Status match = STEMrps.playGame(status.getUser().getId(), player);
+                stemrps.GameResult match = STEMrps.playGame(status.getUser().getId(), player);
                 RPS player_rps = STEMrps.getFromString(player);
                 String tweet = "@" + status.getUser().getScreenName() + " ";
-                if (player_rps == null) {
-                    tweet += "Something went wrong! pls use r, p, or s to play!";
-                } else if (match == stemrps.Status.W) {
-                    tweet += "You (" + player_rps.name() + ") won!";
-                } else if (match == stemrps.Status.T) {
-                    tweet += "You (" + player_rps.name() + ") tied";
-                } else if (match == stemrps.Status.L) {
-                    tweet += "You (" + player_rps.name() + ") lost :(";
+                if (match == null) {
+                    tweet += "Something went wrong! Please use r, rock, p, paper, s, or scissors to play!";
+                } else if (match.outcome == stemrps.Status.W) {
+                    tweet += "You (" + match.player.name() + ") won against me (" + match.comp.name() + ")";
+                } else if (match.outcome == stemrps.Status.T) {
+                    tweet += "You (" + match.player.name() + ") tied against me (" + match.comp.name() + ")";
+                } else if (match.outcome == stemrps.Status.L) {
+                    tweet += "You (" + match.player.name() + ") lost against me (" + match.comp.name() + ")";
                 }
-                tweet += " (#" + STEMrps.gamesPlayed() + ")";
+                tweet += " (Game #" + STEMrps.gamesPlayed() + ")";
                 StatusUpdate rt = new StatusUpdate(tweet);
                 STEMrps.t.updateStatus(rt);
             } catch (Exception ex) {

@@ -35,10 +35,10 @@ public class STEMrps {
     //Whether is a twitter server
     public static boolean isTwitter = false;
 
-    //Our char for pressing keys down
-    static String rock = "r";
-    static String paper = "p";
-    static String scissors = "s";
+    //Our char for pressing keys down aliases
+    static String[] rock = new String[]{"r", "rock", "0"};
+    static String[] paper = new String[]{"p", "paper", "1"};
+    static String[] scissors = new String[]{"s", "scissors", "2"};
 
     //Help text
     static String helpText
@@ -76,9 +76,9 @@ public class STEMrps {
             writeToLogger("~");
             writeToLogger("Starting new session at " + Time.from(Instant.now()).toString());
             writeToLogger("");
-            System.out.println("For rock: " + rock);
-            System.out.println("For paper: " + paper);
-            System.out.println("For scissors: " + scissors);
+            System.out.println("For rock: " + rock[0]);
+            System.out.println("For paper: " + paper[0]);
+            System.out.println("For scissors: " + scissors[0]);
             playGames();
         } else {
             initTwitter(path);
@@ -108,25 +108,30 @@ public class STEMrps {
     public static void playGames() throws IOException {
         Scanner inp = new Scanner(System.in);
         for (int i = 0; i < 10000; ++i) { //max 10000 games
-            Status match = playGame(0, inp.nextLine());
-            if (match == Status.W) {
+            GameResult match = playGame(0, inp.nextLine());
+            if (match == null) {
+                System.out.println("Something went wrong");
+                continue;
+            }
+            if (match.outcome == Status.W) {
                 System.out.println("You won!");
             }
-            if (match == Status.T) {
+            if (match.outcome == Status.T) {
                 System.out.println("You tied");
             }
-            if (match == Status.L) {
+            if (match.outcome == Status.L) {
                 System.out.println("You lost :(");
             }
         }
     }
 
     //Plays one game
-    public static Status playGame(long usr, String input) throws IOException {
+    public static GameResult playGame(long usr, String input) throws IOException {
         /*System.out.println("~");
         System.out.println("input: ");*/
+        GameResult r;
         RPS computer = GameLogic.getSmartStrat(usr);
-        RPS player = RPS.ROCK; //Will terminate if user doesnt enter  correct vals
+        RPS player = GameLogic.rand(); //Will terminate if user doesnt enter  correct vals
         if (input.equalsIgnoreCase("exit")) {
             System.exit(0);
         } else if (input.equalsIgnoreCase("help")) {
@@ -137,23 +142,34 @@ public class STEMrps {
         }
         Status match = GameLogic.beats(player, computer);
         formatGameToLogger(player, match, computer, usr);
-        return match;
+        r = new GameResult(match, player, computer);
+        return r;
+    }
+
+    //Sees if it is non-case sensitive contained in the alias
+    public static boolean isCmdMatch(String[] aliasarr, String inp) {
+        for (String s : aliasarr) {
+            if (s.equalsIgnoreCase(inp)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     //Get what they chose
     public static RPS getFromString(String s) {
-        if (s.equalsIgnoreCase(rock)) {
+        if (isCmdMatch(rock, s)) {
             return RPS.ROCK;
-        } else if (s.equalsIgnoreCase(paper)) {
+        } else if (isCmdMatch(paper, s)) {
             return RPS.PAPER;
-        } else if (s.equalsIgnoreCase(scissors)) {
+        } else if (isCmdMatch(scissors, s)) {
             return RPS.SCISSORS;
         } else {
             System.out.println("Something went wrong, please try again.");
             return null;
         }
     }
-    
+
     //Gets number of games played
     public static long gamesPlayed() throws FileNotFoundException {
         Scanner file = new Scanner(new File(dir + "count.txt"));
