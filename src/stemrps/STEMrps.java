@@ -36,9 +36,9 @@ public class STEMrps {
     public static boolean isTwitter = false;
 
     //Our char for pressing keys down aliases
-    static String[] rock = new String[]{"r", "rock", "0"};
-    static String[] paper = new String[]{"p", "paper", "1"};
-    static String[] scissors = new String[]{"s", "scissors", "2"};
+    static String[] rock = new String[]{"r", "rock"};
+    static String[] paper = new String[]{"p", "paper"};
+    static String[] scissors = new String[]{"s", "scissors"};
 
     //Help text
     static String helpText
@@ -183,23 +183,31 @@ public class STEMrps {
 
     //Log to player logger returns games played
     public static long formatGameToLogger(RPS player, Status s, RPS comp, long usr) throws IOException {
-        PrintWriter logger = new PrintWriter(new FileWriter(dir + "games.txt", true));
-        PrintWriter usrLogger = new PrintWriter(new FileWriter(dir + "usr/" + usr + ".txt", true));
-        Scanner countFile = new Scanner(new File(dir + "count.txt"));
-        long games = Long.parseLong(countFile.nextLine());
-        games++;
-        PrintWriter countLogger = new PrintWriter(new FileWriter(dir + "count.txt"));
+        try {
+            PrintWriter logger = new PrintWriter(new FileWriter(dir + "games.txt", true));
+            PrintWriter usrLogger = new PrintWriter(new FileWriter(dir + "usr/" + usr + ".txt", true));
 
-        makeSureUsrSetup(usr);
+            Scanner countFile = new Scanner(new File(dir + "count.txt"));
+            long games = Long.parseLong(countFile.nextLine());
+            countFile.close();
+            games++;
 
-        usrLogger.println(player.name() + "," + s.name() + "," + comp.name());
-        logger.println(player.name() + "," + s.name() + "," + comp.name());
-        countLogger.println(games);
+            PrintWriter countLogger = new PrintWriter(new FileWriter(dir + "count.txt"));
+            countLogger.println(games);
+            countLogger.close();
 
-        usrLogger.close();
-        logger.close();
-        countLogger.close();
-        return games;
+            makeSureUsrSetup(usr);
+
+            usrLogger.println(player.name() + "," + s.name() + "," + comp.name());
+            logger.println(player.name() + "," + s.name() + "," + comp.name());
+
+            usrLogger.close();
+            logger.close();
+            return games;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return -1;
+        }
     }
 
     public static void makeSureUsrSetup(long usr) throws IOException {

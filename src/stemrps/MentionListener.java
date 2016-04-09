@@ -13,7 +13,9 @@
  */
 package stemrps;
 
-import java.io.IOException;
+import java.sql.Time;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -68,7 +70,6 @@ public class MentionListener implements StatusListener {
                     }
                 }
                 stemrps.GameResult match = STEMrps.playGame(status.getUser().getId(), player);
-                RPS player_rps = STEMrps.getFromString(player);
                 String tweet = "@" + status.getUser().getScreenName() + " ";
                 if (match == null) {
                     tweet += "Something went wrong! Please use r, rock, p, paper, s, or scissors to play!";
@@ -84,7 +85,7 @@ public class MentionListener implements StatusListener {
                 STEMrps.t.updateStatus(rt);
             } catch (Exception ex) {
                 Logger.getLogger(MentionListener.class.getName()).log(Level.SEVERE, null, ex);
-                String tweet = "@" + status.getUser().getScreenName() + " Oops, did't catch that.";
+                String tweet = "@" + status.getUser().getScreenName() + " Oops, did't catch that. " + LocalDateTime.now();
                 StatusUpdate rt = new StatusUpdate(tweet);
                 try {
                     STEMrps.t.updateStatus(rt);
